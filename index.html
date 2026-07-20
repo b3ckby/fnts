@@ -683,7 +683,7 @@ function filtered() {
     if (p.price < state.pmin || p.price > state.pmax) return false;
     if (state.onlyDisq && !p.disq) return false;
     if (state.onlyInj && !p.inj) return false;
-    if (state.onlyOop && !p.oop) return false;
+    if (state.onlyOop && (!p.oop || p.pos === "GK")) return false;
     if (q && !p.name.toLowerCase().includes(q) && !p.team.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -693,12 +693,12 @@ function filtered() {
     if (state.sortKey === "disq") { av = a.disq ? 1 : 0; bv = b.disq ? 1 : 0; }
     if (state.sortKey === "pred") { av = a.pred === null ? -1 : a.pred; bv = b.pred === null ? -1 : b.pred; }
     if (state.sortKey === "pxg90") {
-      av = (a.pxg && a.pxg.minutes >= PXG_MIN_MINUTES) ? a.pxg.xG / a.pxg.minutes * 90 : -1;
-      bv = (b.pxg && b.pxg.minutes >= PXG_MIN_MINUTES) ? b.pxg.xG / b.pxg.minutes * 90 : -1;
+      av = (a.pos !== "GK" && a.pxg && a.pxg.minutes >= PXG_MIN_MINUTES) ? a.pxg.xG / a.pxg.minutes * 90 : -1;
+      bv = (b.pos !== "GK" && b.pxg && b.pxg.minutes >= PXG_MIN_MINUTES) ? b.pxg.xG / b.pxg.minutes * 90 : -1;
     }
     if (state.sortKey === "xa90") {
-      av = (a.pxg && a.pxg.minutes >= PXG_MIN_MINUTES) ? a.pxg.xA / a.pxg.minutes * 90 : -1;
-      bv = (b.pxg && b.pxg.minutes >= PXG_MIN_MINUTES) ? b.pxg.xA / b.pxg.minutes * 90 : -1;
+      av = (a.pos !== "GK" && a.pxg && a.pxg.minutes >= PXG_MIN_MINUTES) ? a.pxg.xA / a.pxg.minutes * 90 : -1;
+      bv = (b.pos !== "GK" && b.pxg && b.pxg.minutes >= PXG_MIN_MINUTES) ? b.pxg.xA / b.pxg.minutes * 90 : -1;
     }
     if (state.sortKey === "minpg") {
       av = (a.pxg && a.pxg.matches > 0) ? a.pxg.minutes / a.pxg.matches : -1;
@@ -731,7 +731,7 @@ function renderRows() {
   tbody.innerHTML = list.map(p => `
     <tr>
       <td class="name">${p.name}</td>
-      <td><span class="chip ${p.pos}">${POS_LABEL[p.pos]}</span>${p.oop ? `<span class="chip OOP" title="По факту последних матчей играет как ${POS_LABEL[p.oop]}, а не ${POS_LABEL[p.pos]} (фэнтези-позиция)">OOP→${POS_LABEL[p.oop]}</span>` : ""}</td>
+      <td><span class="chip ${p.pos}">${POS_LABEL[p.pos]}</span>${(p.oop && p.pos !== "GK") ? `<span class="chip OOP" title="По факту последних матчей играет как ${POS_LABEL[p.oop]}, а не ${POS_LABEL[p.pos]} (фэнтези-позиция)">OOP→${POS_LABEL[p.oop]}</span>` : ""}</td>
       <td class="team">${p.team}</td>
       <td class="price">${p.price}</td>
       <td>${p.pop === undefined ? `<span class="pred-unknown">нет данных</span>` : `
@@ -746,12 +746,14 @@ function renderRows() {
           <span class="pred-pct">${p.pred}%</span>
         </div>`}</td>
       <td class="price">${(() => {
+        if (p.pos === "GK") return `<span class="status-ok">—</span>`;
         if (!p.pxg) return `<span class="pred-unknown">нет данных</span>`;
         if (p.pxg.minutes < PXG_MIN_MINUTES) return `<span class="pred-unknown" title="${p.pxg.minutes} мин. за последние ${p.pxg.matches} матчей — маловато для оценки">мало игр</span>`;
         const per90 = (p.pxg.xG / p.pxg.minutes * 90).toFixed(2);
         return `<span title="xG ${p.pxg.xG.toFixed(2)} / xA ${p.pxg.xA.toFixed(2)} за ${p.pxg.minutes} мин. (последние ${p.pxg.matches} матчей)">${per90}</span>`;
       })()}</td>
       <td class="price">${(() => {
+        if (p.pos === "GK") return `<span class="status-ok">—</span>`;
         if (!p.pxg) return `<span class="pred-unknown">нет данных</span>`;
         if (p.pxg.minutes < PXG_MIN_MINUTES) return `<span class="pred-unknown" title="${p.pxg.minutes} мин. за последние ${p.pxg.matches} матчей — маловато для оценки">мало игр</span>`;
         const xa90 = (p.pxg.xA / p.pxg.minutes * 90).toFixed(2);
