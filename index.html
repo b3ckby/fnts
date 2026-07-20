@@ -338,6 +338,46 @@
   }
   .prob-cell { display: flex; align-items: center; gap: 7px; justify-content: flex-end; }
 
+  .calendar-section { margin-top: 28px; }
+  .calendar-section h2 {
+    font-size: 16px;
+    font-weight: 800;
+    margin: 0 0 10px;
+  }
+  .calendar-section-sub {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-dim);
+  }
+  .calendar-note {
+    font-size: 11.5px;
+    color: var(--ink-dim);
+    margin: 8px 2px 0;
+    line-height: 1.5;
+  }
+  #calTable td.name { white-space: nowrap; }
+  .cal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 7px;
+    border-radius: 5px;
+    color: #fff;
+    white-space: nowrap;
+    cursor: help;
+  }
+  .cal-badge .venue { opacity: 0.85; font-weight: 600; }
+  .cal-avg {
+    display: inline-block;
+    font-size: 12.5px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 5px;
+    color: #fff;
+  }
+
   @media (max-width: 640px) {
     .stats { grid-template-columns: repeat(2, 1fr); }
     td.team { display: none; }
@@ -409,7 +449,28 @@
     <p class="tour-odds-note">У всех 8 матчей тура на Winline есть прямой рынок «Не пропустит» — расчёт без фолбэка через тотал соперника. Данные собраны 20.07.2026, до дедлайна тура коэффициенты могут измениться.</p>
   </section>
 
-  <footer id="footerNote">446 игроков · данные из конструктора команды sports.ru · дисквалификации проверяются по данным premierliga.ru · предикт старта — источник sorareinside.com · травмы — по новостям и сайтам клубов РПЛ</footer>
+  <section class="calendar-section">
+    <h2>Календарь на 5 туров вперёд <span class="calendar-section-sub">(сложность соперников)</span></h2>
+    <div class="table-scroll">
+      <table id="calTable">
+        <thead>
+          <tr>
+            <th data-ckey="team">Клуб <span class="arrow">▾</span></th>
+            <th data-ckey="r0">Тур 1<br><small>24–26.07</small></th>
+            <th data-ckey="r1">Тур 2<br><small>31.07–02.08</small></th>
+            <th data-ckey="r2">Тур 3<br><small>08–10.08</small></th>
+            <th data-ckey="r3">Тур 4<br><small>14–16.08</small></th>
+            <th data-ckey="r4">Тур 5<br><small>22–24.08</small></th>
+            <th data-ckey="avg" style="text-align:right">Ср. сложность <span class="arrow">▾</span></th>
+          </tr>
+        </thead>
+        <tbody id="calRows"></tbody>
+      </table>
+    </div>
+    <p class="calendar-note">Сложность соперника (1 — легко, 5 — тяжело) считается по итоговому месту клуба в РПЛ 2025/26 (топ-3 → 5, следующие 3 → 4, следующие 3 → 3, следующие 4 → 2, последние 3 → 1), матч дома снижает сложность на 1 ступень. Букмекерские коэффициенты Winline пока есть только на тур 1 — как только они появятся на туры 2-5 (обычно за 5-7 дней до тура), эта оценка будет уточняться в рамках задач по вторникам/пятницам. Сортировка по «Ср. сложность» по возрастанию показывает клубы с самым лёгким отрезком — источник трансферных идей на несколько туров вперёд.</p>
+  </section>
+
+  <footer id="footerNote">446 игроков · данные из конструктора команды sports.ru · дисквалификации проверяются по данным premierliga.ru · предикт старта — источник sorareinside.com · травмы — по новостям и сайтам клубов РПЛ · календарь — официальное расписание premierliga.ru</footer>
 </div>
 
 <script>
@@ -463,7 +524,33 @@ const SYNC_INFO = {
   disq: "19.07.2026 16:51",
   injuries: "19.07.2026 12:50",
   pred: "19.07.2026 12:50",
-  odds: "20.07.2026 10:59"
+  odds: "20.07.2026 10:59",
+  calendar: "20.07.2026 11:20"
+};
+
+const TEAM_RANK = {
+  "Зенит": 1, "Краснодар": 2, "Локомотив": 3, "Спартак": 4, "ЦСКА": 5, "Балтика": 6,
+  "Динамо": 7, "Рубин": 8, "Ахмат": 9, "Ростов": 10, "Крылья Советов": 11, "Оренбург": 12,
+  "Акрон": 13, "Динамо Махачкала": 14, "Родина": 15, "Факел": 16
+};
+
+const CALENDAR = {
+  "ЦСКА": [["Балтика","H"],["Крылья Советов","H"],["Ростов","A"],["Факел","H"],["Локомотив","H"]],
+  "Балтика": [["ЦСКА","A"],["Динамо","H"],["Крылья Советов","A"],["Спартак","H"],["Рубин","H"]],
+  "Динамо": [["Крылья Советов","H"],["Балтика","A"],["Динамо Махачкала","H"],["Зенит","A"],["Родина","H"]],
+  "Крылья Советов": [["Динамо","A"],["ЦСКА","A"],["Балтика","H"],["Динамо Махачкала","A"],["Акрон","A"]],
+  "Акрон": [["Зенит","H"],["Рубин","H"],["Локомотив","A"],["Родина","A"],["Крылья Советов","H"]],
+  "Зенит": [["Акрон","A"],["Оренбург","A"],["Родина","H"],["Динамо","H"],["Спартак","A"]],
+  "Факел": [["Динамо Махачкала","H"],["Краснодар","A"],["Ахмат","H"],["ЦСКА","A"],["Оренбург","H"]],
+  "Динамо Махачкала": [["Факел","A"],["Локомотив","H"],["Динамо","A"],["Крылья Советов","H"],["Краснодар","A"]],
+  "Спартак": [["Родина","H"],["Ахмат","A"],["Краснодар","H"],["Балтика","A"],["Зенит","H"]],
+  "Родина": [["Спартак","A"],["Ростов","H"],["Зенит","A"],["Акрон","H"],["Динамо","A"]],
+  "Оренбург": [["Ростов","H"],["Зенит","H"],["Рубин","A"],["Локомотив","H"],["Факел","A"]],
+  "Ростов": [["Оренбург","A"],["Родина","A"],["ЦСКА","H"],["Рубин","H"],["Ахмат","A"]],
+  "Локомотив": [["Ахмат","H"],["Динамо Махачкала","A"],["Акрон","H"],["Оренбург","A"],["ЦСКА","A"]],
+  "Ахмат": [["Локомотив","A"],["Спартак","H"],["Факел","A"],["Краснодар","A"],["Ростов","H"]],
+  "Рубин": [["Краснодар","H"],["Акрон","A"],["Оренбург","H"],["Ростов","A"],["Балтика","A"]],
+  "Краснодар": [["Рубин","A"],["Факел","H"],["Спартак","A"],["Ахмат","H"],["Динамо Махачкала","H"]]
 };
 
 const POS_MAP = { GOALKEEPER: "GK", DEFENDER: "DEF", MIDFIELDER: "MID", FORWARD: "FWD" };
@@ -676,6 +763,68 @@ document.querySelectorAll("#tourTable thead th[data-tkey]").forEach(th => {
   });
 });
 
+function tierForRank(rank) {
+  if (rank <= 3) return 5;
+  if (rank <= 6) return 4;
+  if (rank <= 9) return 3;
+  if (rank <= 13) return 2;
+  return 1;
+}
+
+function fdr(opponent, venue) {
+  const t = tierForRank(TEAM_RANK[opponent]);
+  return venue === "H" ? Math.max(1, t - 1) : t;
+}
+
+function fdrColor(v) {
+  return { 1: "hsl(120, 62%, 40%)", 2: "hsl(90, 55%, 38%)", 3: "hsl(45, 85%, 40%)", 4: "hsl(25, 80%, 45%)", 5: "hsl(0, 68%, 45%)" }[v];
+}
+
+const calRowsData = Object.keys(CALENDAR).map(team => {
+  const rounds = CALENDAR[team].map(([opp, venue]) => ({ opp, venue, fdr: fdr(opp, venue) }));
+  const avg = rounds.reduce((s, r) => s + r.fdr, 0) / rounds.length;
+  return { team, rounds, avg };
+});
+let calState = { sortKey: "avg", sortDir: 1 };
+
+function renderCalendarRows() {
+  const list = [...calRowsData].sort((a, b) => {
+    let av, bv;
+    if (calState.sortKey === "team") { av = a.team.toLowerCase(); bv = b.team.toLowerCase(); }
+    else if (calState.sortKey === "avg") { av = a.avg; bv = b.avg; }
+    else { const idx = parseInt(calState.sortKey.slice(1), 10); av = a.rounds[idx].fdr; bv = b.rounds[idx].fdr; }
+    if (av < bv) return -1 * calState.sortDir;
+    if (av > bv) return 1 * calState.sortDir;
+    return a.team.localeCompare(b.team, "ru");
+  });
+  document.getElementById("calRows").innerHTML = list.map(r => `
+    <tr>
+      <td class="name">${r.team}</td>
+      ${r.rounds.map(rd => `<td><span class="cal-badge" style="background:${fdrColor(rd.fdr)}" title="${rd.venue === "H" ? "Дома" : "В гостях"} против ${rd.opp}, сложность ${rd.fdr}/5">${rd.opp} <span class="venue">${rd.venue === "H" ? "д" : "в"}</span></span></td>`).join("")}
+      <td style="text-align:right"><span class="cal-avg" style="background:${fdrColor(Math.round(r.avg))}">${r.avg.toFixed(1)}</span></td>
+    </tr>
+  `).join("");
+}
+
+document.querySelectorAll("#calTable thead th[data-ckey]").forEach(th => {
+  th.addEventListener("click", () => {
+    const key = th.dataset.ckey;
+    if (calState.sortKey === key) {
+      calState.sortDir *= -1;
+    } else {
+      calState.sortKey = key;
+      calState.sortDir = key === "team" ? 1 : 1;
+    }
+    document.querySelectorAll("#calTable thead th").forEach(h => {
+      h.classList.remove("sorted");
+      h.querySelector(".arrow") && (h.querySelector(".arrow").textContent = "▾");
+    });
+    th.classList.add("sorted");
+    th.querySelector(".arrow") && (th.querySelector(".arrow").textContent = calState.sortDir === 1 ? "▴" : "▾");
+    renderCalendarRows();
+  });
+});
+
 document.getElementById("search").addEventListener("input", e => {
   state.q = e.target.value;
   renderRows();
@@ -727,7 +876,8 @@ function renderSyncPanel() {
     ["Дисквалификации", SYNC_INFO.disq],
     ["Травмы", SYNC_INFO.injuries],
     ["Предикт старта", SYNC_INFO.pred],
-    ["Тур: сухие/тоталы", SYNC_INFO.odds]
+    ["Тур: сухие/тоталы", SYNC_INFO.odds],
+    ["Календарь (5 туров)", SYNC_INFO.calendar]
   ];
   document.getElementById("syncPanel").innerHTML =
     `<div class="sync-title">Синхронизация данных</div>` +
@@ -740,5 +890,6 @@ renderTeamFilter();
 renderPriceSelects();
 renderRows();
 renderTourRows();
+renderCalendarRows();
 renderSyncPanel();
 </script>
