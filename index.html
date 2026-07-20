@@ -467,7 +467,7 @@
         <tbody id="calRows"></tbody>
       </table>
     </div>
-    <p class="calendar-note">Сложность соперника (1 — легко, 5 — тяжело) считается по итоговому месту клуба в РПЛ 2025/26 (топ-3 → 5, следующие 3 → 4, следующие 3 → 3, следующие 4 → 2, последние 3 → 1), матч дома снижает сложность на 1 ступень. Букмекерские коэффициенты Winline пока есть только на тур 1 — как только они появятся на туры 2-5 (обычно за 5-7 дней до тура), эта оценка будет уточняться в рамках задач по вторникам/пятницам. Сортировка по «Ср. сложность» по возрастанию показывает клубы с самым лёгким отрезком — источник трансферных идей на несколько туров вперёд.</p>
+    <p class="calendar-note">Сложность соперника (1 — легко, 5 — тяжело) считается по итоговому месту клуба в РПЛ 2025/26 (топ-3 → 5, следующие 3 → 4, следующие 3 → 3, следующие 4 → 2, последние 3 → 1). Свой стадион даёт небольшое преимущество — матч дома снижает сложность на 0.5, выезд повышает на 0.5 (отсюда «получерные» значения вроде 3.5 и 4.5). Букмекерские коэффициенты Winline пока есть только на тур 1 — как только они появятся на туры 2-5 (обычно за 5-7 дней до тура), эта оценка будет уточняться в рамках задач по вторникам/пятницам. Сортировка по «Ср. сложность» по возрастанию показывает клубы с самым лёгким отрезком — источник трансферных идей на несколько туров вперёд.</p>
   </section>
 
   <footer id="footerNote">446 игроков · данные из конструктора команды sports.ru · дисквалификации проверяются по данным premierliga.ru · предикт старта — источник sorareinside.com · травмы — по новостям и сайтам клубов РПЛ · календарь — официальное расписание premierliga.ru</footer>
@@ -773,11 +773,12 @@ function tierForRank(rank) {
 
 function fdr(opponent, venue) {
   const t = tierForRank(TEAM_RANK[opponent]);
-  return venue === "H" ? Math.max(1, t - 1) : t;
+  const adj = venue === "H" ? -0.5 : 0.5;
+  return Math.min(5, Math.max(1, t + adj));
 }
 
 function fdrColor(v) {
-  return { 1: "hsl(120, 62%, 40%)", 2: "hsl(90, 55%, 38%)", 3: "hsl(45, 85%, 40%)", 4: "hsl(25, 80%, 45%)", 5: "hsl(0, 68%, 45%)" }[v];
+  return { 1: "hsl(120, 62%, 40%)", 2: "hsl(90, 55%, 38%)", 3: "hsl(45, 85%, 40%)", 4: "hsl(25, 80%, 45%)", 5: "hsl(0, 68%, 45%)" }[Math.round(v)];
 }
 
 const calRowsData = Object.keys(CALENDAR).map(team => {
@@ -800,8 +801,8 @@ function renderCalendarRows() {
   document.getElementById("calRows").innerHTML = list.map(r => `
     <tr>
       <td class="name">${r.team}</td>
-      ${r.rounds.map(rd => `<td><span class="cal-badge" style="background:${fdrColor(rd.fdr)}" title="${rd.venue === "H" ? "Дома" : "В гостях"} против ${rd.opp}, сложность ${rd.fdr}/5">${rd.opp} <span class="venue">${rd.venue === "H" ? "д" : "в"}</span></span></td>`).join("")}
-      <td style="text-align:right"><span class="cal-avg" style="background:${fdrColor(Math.round(r.avg))}">${r.avg.toFixed(1)}</span></td>
+      ${r.rounds.map(rd => `<td><span class="cal-badge" style="background:${fdrColor(rd.fdr)}" title="${rd.venue === "H" ? "Дома" : "В гостях"} против ${rd.opp}, сложность ${rd.fdr.toFixed(1)}/5">${rd.opp} <span class="venue">${rd.venue === "H" ? "д" : "в"}</span></span></td>`).join("")}
+      <td style="text-align:right"><span class="cal-avg" style="background:${fdrColor(r.avg)}">${r.avg.toFixed(1)}</span></td>
     </tr>
   `).join("");
 }
