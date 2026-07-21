@@ -623,7 +623,7 @@ const players = RAW.map(r => ({
   popTrend: popTrendMap[r[0]] || null,
   disq: disqMap[r[0]] || null,
   inj: injMap[r[0]] || null,
-  pred: predMap[r[0]] === undefined ? 0 : predMap[r[0]],
+  pred: predMap[r[0]] === undefined ? null : predMap[r[0]],
   pxg: pxgMap[r[0]] || null,
   oop: oopMap[r[0]] || null,
   so5: so5Map[r[0]] || null
